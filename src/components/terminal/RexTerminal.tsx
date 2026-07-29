@@ -154,7 +154,17 @@ export default function RexTerminal() {
         responseMsg = {
           id: (Date.now() + 1).toString(),
           type: 'system',
-          content: `Core: ${TECH_STACK.center} | Stack: ${TECH_STACK.orbiting.join(', ')}`,
+          content: (
+            <div className="space-y-2">
+              <p className="text-primary font-bold">Engineering Stack:</p>
+              {ENGINEERING_STACK.map((stack, i) => (
+                <div key={i}>
+                  <span className="text-cyan-400 font-bold">{stack.category}:</span>{' '}
+                  <span className="text-gray-300">{stack.chips.join(', ')}</span>
+                </div>
+              ))}
+            </div>
+          ),
         };
         break;
 
