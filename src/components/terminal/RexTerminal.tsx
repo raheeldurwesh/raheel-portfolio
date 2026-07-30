@@ -110,42 +110,57 @@ export default function RexTerminal() {
         break;
 
       case 'rexai':
+        window.open('https://rex-ai-raheel.vercel.app/', '_blank');
         responseMsg = {
           id: (Date.now() + 1).toString(),
           type: 'success',
-          content: '🤖 REX AI Web Platform: https://rex-ai-raheel.vercel.app/',
+          content: (
+            <span>🤖 REX AI Web Platform: <a href="https://rex-ai-raheel.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">https://rex-ai-raheel.vercel.app/</a></span>
+          ),
         };
         break;
 
       case 'tableserve':
+        window.open('https://table-serve.vercel.app/', '_blank');
         responseMsg = {
           id: (Date.now() + 1).toString(),
           type: 'success',
-          content: '🍽️ TableServe Restaurant SaaS Platform: https://table-serve.vercel.app/',
+          content: (
+            <span>🍽️ TableServe Restaurant SaaS Platform: <a href="https://table-serve.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">https://table-serve.vercel.app/</a></span>
+          ),
         };
         break;
 
       case 'linkedin':
+        window.open(OWNER.linkedin, '_blank');
         responseMsg = {
           id: (Date.now() + 1).toString(),
           type: 'success',
-          content: `🔗 LinkedIn: ${OWNER.linkedin}`,
+          content: (
+            <span>🔗 LinkedIn: <a href={OWNER.linkedin} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.linkedin}</a></span>
+          ),
         };
         break;
 
       case 'github':
+        window.open(OWNER.github, '_blank');
         responseMsg = {
           id: (Date.now() + 1).toString(),
           type: 'success',
-          content: `🐙 GitHub: ${OWNER.github}`,
+          content: (
+            <span>🐙 GitHub: <a href={OWNER.github} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.github}</a></span>
+          ),
         };
         break;
 
       case 'instagram':
+        window.open(OWNER.instagram, '_blank');
         responseMsg = {
           id: (Date.now() + 1).toString(),
           type: 'success',
-          content: `📸 Instagram: ${OWNER.instagram}`,
+          content: (
+            <span>📸 Instagram: <a href={OWNER.instagram} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.instagram}</a></span>
+          ),
         };
         break;
 
@@ -175,11 +190,11 @@ export default function RexTerminal() {
           content: (
             <div className="space-y-1 text-xs">
               <p className="text-emerald-400 font-bold">Contact & Profiles:</p>
-              <p>🐙 GitHub: {OWNER.github}</p>
-              <p>🔗 LinkedIn: {OWNER.linkedin}</p>
-              <p>📸 Instagram: {OWNER.instagram}</p>
-              <p>🤖 REX AI: https://rex-ai-raheel.vercel.app/</p>
-              <p>🍽️ TableServe: https://table-serve.vercel.app/</p>
+              <p>🐙 GitHub: <a href={OWNER.github} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.github}</a></p>
+              <p>🔗 LinkedIn: <a href={OWNER.linkedin} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.linkedin}</a></p>
+              <p>📸 Instagram: <a href={OWNER.instagram} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.instagram}</a></p>
+              <p>🤖 REX AI: <a href="https://rex-ai-raheel.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">https://rex-ai-raheel.vercel.app/</a></p>
+              <p>🍽️ TableServe: <a href="https://table-serve.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">https://table-serve.vercel.app/</a></p>
             </div>
           ),
         };
