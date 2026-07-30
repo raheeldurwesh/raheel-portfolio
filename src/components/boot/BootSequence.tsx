@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { soundFX } from '@/lib/audioSFX';
 
@@ -86,15 +86,18 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
   const [isPowered, setIsPowered] = useState(false);
   const [phase, setPhase] = useState<'booting' | 'welcome' | 'done'>('booting');
 
+  const isFittedRef = useRef(false);
+
   useEffect(() => {
     if (phase !== 'booting') return;
 
     let currentProgress = 0;
     const interval = setInterval(() => {
-      const increment = Math.random() * 3 + 1.8;
+      const increment = Math.random() * 3.5 + 2.2;
       currentProgress += increment;
 
-      if (currentProgress >= 15 && !isFitted) {
+      if (currentProgress >= 15 && !isFittedRef.current) {
+        isFittedRef.current = true;
         setIsFitted(true);
         soundFX.playClick();
       }
@@ -111,9 +114,9 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
           setPhase('welcome');
           setTimeout(() => {
             setPhase('done');
-            setTimeout(onComplete, 600);
-          }, 800);
-        }, 600);
+            setTimeout(onComplete, 400);
+          }, 600);
+        }, 500);
       } else {
         setProgress(Math.floor(currentProgress));
         if (currentProgress > 75) {
@@ -124,10 +127,10 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
           setStatusText('SOCKET ENGAGED — DISPATCHING ZIGZAG POWER...');
         }
       }
-    }, 40);
+    }, 35);
 
     return () => clearInterval(interval);
-  }, [phase, isFitted, onComplete]);
+  }, [phase, onComplete]);
 
   return (
     <AnimatePresence>
