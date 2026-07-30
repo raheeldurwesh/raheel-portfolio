@@ -22,7 +22,7 @@ export default function Footer() {
           </div>
 
           {/* Center - Nav */}
-          <nav className="flex items-center gap-6">
+          <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -36,7 +36,7 @@ export default function Footer() {
           </nav>
 
           {/* Right */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-2">
               <a
                 href={OWNER.github}
@@ -66,7 +66,7 @@ export default function Footer() {
                 <IconInstagram size={15} />
               </a>
             </div>
-            <div className="w-px h-4 bg-white/10" />
+            <div className="w-px h-4 bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[11px] text-white/25 font-mono">
