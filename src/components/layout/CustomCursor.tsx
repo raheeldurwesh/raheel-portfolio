@@ -1,20 +1,28 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
+
+  const cursorX = useSpring(mouseX, { stiffness: 500, damping: 28, mass: 0.5 });
+  const cursorY = useSpring(mouseY, { stiffness: 500, damping: 28, mass: 0.5 });
+
+  const trailX = useSpring(mouseX, { stiffness: 150, damping: 15, mass: 0.8 });
+  const trailY = useSpring(mouseY, { stiffness: 150, damping: 15, mass: 0.8 });
+
   useEffect(() => {
-    // Only show custom cursor on desktop
-    const isTouchDevice = 'ontouchstart' in window;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
       if (!isVisible) setIsVisible(true);
     };
 
@@ -34,8 +42,8 @@ export default function CustomCursor() {
       setIsVisible(false);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseover', handleMouseOver);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
@@ -43,7 +51,7 @@ export default function CustomCursor() {
       window.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [isVisible]);
+  }, [isVisible, mouseX, mouseY]);
 
   if (!isVisible) return null;
 
@@ -51,21 +59,14 @@ export default function CustomCursor() {
     <>
       {/* Main cursor dot */}
       <motion.div
-        className="fixed top-0 left-0 z-[9998] pointer-events-none mix-blend-difference"
-        animate={{
-          x: position.x - (isHovering ? 20 : 4),
-          y: position.y - (isHovering ? 20 : 4),
+        className="fixed top-0 left-0 z-[9998] pointer-events-none mix-blend-difference rounded-full"
+        style={{
+          x: cursorX,
+          y: cursorY,
           width: isHovering ? 40 : 8,
           height: isHovering ? 40 : 8,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 500,
-          damping: 28,
-          mass: 0.5,
-        }}
-        style={{
-          borderRadius: '50%',
+          translateX: '-50%',
+          translateY: '-50%',
           backgroundColor: isHovering ? 'transparent' : 'white',
           border: isHovering ? '1.5px solid white' : 'none',
         }}
@@ -74,15 +75,11 @@ export default function CustomCursor() {
       {/* Glow trail */}
       <motion.div
         className="fixed top-0 left-0 z-[9997] pointer-events-none"
-        animate={{
-          x: position.x - 30,
-          y: position.y - 30,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 150,
-          damping: 15,
-          mass: 0.8,
+        style={{
+          x: trailX,
+          y: trailY,
+          translateX: '-50%',
+          translateY: '-50%',
         }}
       >
         <div
