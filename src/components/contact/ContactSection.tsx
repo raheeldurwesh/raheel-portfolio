@@ -18,7 +18,7 @@ import {
 
 interface TerminalLine {
   type: 'input' | 'output' | 'system' | 'success';
-  content: string;
+  content: React.ReactNode;
 }
 
 const COMMAND_ICONS = {
@@ -68,38 +68,43 @@ export default function ContactSection() {
           break;
 
         case 'linkedin':
+          window.open(OWNER.linkedin, '_blank');
           setLines((prev) => [
             ...prev,
-            { type: 'success', content: `🔗 LinkedIn Profile: ${OWNER.linkedin}` },
+            { type: 'success', content: <span>🔗 LinkedIn Profile: <a href={OWNER.linkedin} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.linkedin}</a></span> },
           ]);
           break;
 
         case 'github':
+          window.open(OWNER.github, '_blank');
           setLines((prev) => [
             ...prev,
-            { type: 'success', content: `🐙 GitHub Repositories: ${OWNER.github}` },
+            { type: 'success', content: <span>🐙 GitHub Repositories: <a href={OWNER.github} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.github}</a></span> },
           ]);
           break;
 
         case 'instagram':
+          window.open(OWNER.instagram, '_blank');
           setLines((prev) => [
             ...prev,
-            { type: 'success', content: `📸 Instagram Profile: ${OWNER.instagram}` },
+            { type: 'success', content: <span>📸 Instagram Profile: <a href={OWNER.instagram} target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">{OWNER.instagram}</a></span> },
           ]);
           break;
 
         case 'tableserve':
+          window.open('https://table-serve.vercel.app/', '_blank');
           setLines((prev) => [
             ...prev,
-            { type: 'success', content: `🍽️ TableServe Platform: https://table-serve.vercel.app/` },
+            { type: 'success', content: <span>🍽️ TableServe Platform: <a href="https://table-serve.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">https://table-serve.vercel.app/</a></span> },
           ]);
           break;
 
         case 'rexai':
         case 'rex':
+          window.open('https://rex-ai-raheel.vercel.app/', '_blank');
           setLines((prev) => [
             ...prev,
-            { type: 'success', content: `🤖 REX AI Web Engine: https://rex-ai-raheel.vercel.app/` },
+            { type: 'success', content: <span>🤖 REX AI Web Engine: <a href="https://rex-ai-raheel.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-cyan-400">https://rex-ai-raheel.vercel.app/</a></span> },
           ]);
           break;
 
