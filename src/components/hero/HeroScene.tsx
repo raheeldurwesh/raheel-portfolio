@@ -110,16 +110,30 @@ function AmbientSphere({ coreY = -2.0 }: { coreY?: number }) {
 // ============================================
 function HologramCard({
   project,
-  position,
-  rotation = [0, 0, 0],
+  index,
+  totalCount,
+  coreX,
+  coreY,
+  coreZ,
+  rx,
+  rz,
+  ry,
+  angleRef,
   onClick,
   onHover,
   isHovered,
   mousePosition,
 }: {
   project: (typeof PROJECTS)[0];
-  position: [number, number, number];
-  rotation?: [number, number, number];
+  index: number;
+  totalCount: number;
+  coreX: number;
+  coreY: number;
+  coreZ: number;
+  rx: number;
+  rz: number;
+  ry: number;
+  angleRef: React.MutableRefObject<number>;
   onClick: () => void;
   onHover: (hovered: boolean) => void;
   isHovered: boolean;
@@ -129,28 +143,31 @@ function HologramCard({
   const groupRef = useRef<THREE.Group>(null!);
 
   useFrame(() => {
-    if (meshRef.current) {
-      const glow = isHovered ? 0.6 : 0.15;
-      const mat = meshRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, glow, 0.08);
-    }
+    const angle = (index / totalCount) * Math.PI * 2 + angleRef.current;
+    const x = coreX + Math.cos(angle) * rx;
+    const z = coreZ + Math.sin(angle) * rz;
+    const y = coreY + Math.sin(angle * 2) * ry;
 
     if (groupRef.current) {
+      groupRef.current.position.set(x, y, z);
+
       const targetScale = isHovered ? 1.08 : 1.0;
       groupRef.current.scale.setScalar(
         THREE.MathUtils.lerp(groupRef.current.scale.x, targetScale, 0.1)
       );
 
-      const baseRotX = rotation[0];
-      const baseRotY = rotation[1];
-      const baseRotZ = rotation[2];
-
-      const targetRotX = isHovered ? baseRotX - mousePosition.current.y * 0.35 : baseRotX;
+      const baseRotY = Math.sin(angle) * -0.28;
+      const targetRotX = isHovered ? -mousePosition.current.y * 0.35 : 0;
       const targetRotY = isHovered ? baseRotY + mousePosition.current.x * 0.35 : baseRotY;
 
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, 0.08);
       groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.08);
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, baseRotZ, 0.08);
+    }
+
+    if (meshRef.current) {
+      const glow = isHovered ? 0.6 : 0.15;
+      const mat = meshRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, glow, 0.08);
     }
   });
 
@@ -160,8 +177,6 @@ function HologramCard({
     <Float speed={2} rotationIntensity={0.12} floatIntensity={0.35} floatingRange={[-0.1, 0.1]}>
       <group
         ref={groupRef}
-        position={position}
-        rotation={rotation}
         onClick={(e) => {
           e.stopPropagation();
           soundFX.playClick();
@@ -200,11 +215,11 @@ function HologramCard({
         </mesh>
 
         <mesh position={[0, 0.42, 0.02]}>
-          <circleGeometry args={[0.13, 32]} />
+          <circleGeometry args={[0.13, 24]} />
           <meshBasicMaterial color={project.color} transparent opacity={0.35} />
         </mesh>
         <mesh position={[0, 0.42, 0.025]}>
-          <circleGeometry args={[0.045, 32]} />
+          <circleGeometry args={[0.045, 24]} />
           <meshBasicMaterial color={project.color} />
         </mesh>
 
@@ -297,7 +312,7 @@ function RoomEnvironment() {
       </mesh>
 
       <mesh position={[0, 4.2, -2]} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2, 2.2, 64]} />
+        <ringGeometry args={[2, 2.2, 32]} />
         <meshBasicMaterial color="#2563EB" transparent opacity={0.08} side={THREE.DoubleSide} />
       </mesh>
     </group>
@@ -308,42 +323,56 @@ function RoomEnvironment() {
 // 3D ENERGY LASER BEAM
 // ============================================
 function EnergyBeam({
-  start,
-  end,
+  index,
+  totalCount,
+  coreX,
+  coreY,
+  coreZ,
+  rx,
+  rz,
+  ry,
+  angleRef,
   color = '#3B82F6',
   isHovered = false,
 }: {
-  start: [number, number, number];
-  end: [number, number, number];
+  index: number;
+  totalCount: number;
+  coreX: number;
+  coreY: number;
+  coreZ: number;
+  rx: number;
+  rz: number;
+  ry: number;
+  angleRef: React.MutableRefObject<number>;
   color?: string;
   isHovered?: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const pulseRef = useRef<THREE.Mesh>(null!);
 
-  const { midPosition, orientation, length } = useMemo(() => {
-    const vStart = new THREE.Vector3(...start);
-    const vEnd = new THREE.Vector3(...end);
+  const beamColor = useMemo(() => new THREE.Color(color), [color]);
+
+  useFrame((state) => {
+    const angle = (index / totalCount) * Math.PI * 2 + angleRef.current;
+    const endX = coreX + Math.cos(angle) * rx;
+    const endZ = coreZ + Math.sin(angle) * rz;
+    const endY = coreY + Math.sin(angle * 2) * ry;
+
+    const vStart = new THREE.Vector3(coreX, coreY, coreZ);
+    const vEnd = new THREE.Vector3(endX, endY, endZ);
     const direction = vEnd.clone().sub(vStart);
     const len = direction.length();
     const mid = vStart.clone().add(vEnd).multiplyScalar(0.5);
 
     const rot = new THREE.Quaternion();
     rot.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
-
     const euler = new THREE.Euler().setFromQuaternion(rot);
 
-    return {
-      midPosition: [mid.x, mid.y, mid.z] as [number, number, number],
-      orientation: [euler.x, euler.y, euler.z] as [number, number, number],
-      length: len,
-    };
-  }, [start, end]);
-
-  const beamColor = useMemo(() => new THREE.Color(color), [color]);
-
-  useFrame((state) => {
     if (meshRef.current) {
+      meshRef.current.position.set(mid.x, mid.y, mid.z);
+      meshRef.current.rotation.set(euler.x, euler.y, euler.z);
+      meshRef.current.scale.set(1, len, 1);
+
       const mat = meshRef.current.material as THREE.MeshStandardMaterial;
       const targetIntensity = isHovered ? 2.5 : 1.0;
       const targetOpacity = isHovered ? 0.95 : 0.65;
@@ -353,9 +382,9 @@ function EnergyBeam({
 
     if (pulseRef.current) {
       const t = (state.clock.elapsedTime * (isHovered ? 1.8 : 0.8)) % 1;
-      pulseRef.current.position.x = THREE.MathUtils.lerp(start[0], end[0], t);
-      pulseRef.current.position.y = THREE.MathUtils.lerp(start[1], end[1], t);
-      pulseRef.current.position.z = THREE.MathUtils.lerp(start[2], end[2], t);
+      pulseRef.current.position.x = THREE.MathUtils.lerp(coreX, endX, t);
+      pulseRef.current.position.y = THREE.MathUtils.lerp(coreY, endY, t);
+      pulseRef.current.position.z = THREE.MathUtils.lerp(coreZ, endZ, t);
 
       const targetScale = isHovered ? 0.12 : 0.07;
       pulseRef.current.scale.setScalar(
@@ -367,8 +396,8 @@ function EnergyBeam({
   return (
     <group>
       {/* Volumetric 3D Laser Beam Cylinder */}
-      <mesh ref={meshRef} position={midPosition} rotation={orientation}>
-        <cylinderGeometry args={[0.025, 0.025, length, 16]} />
+      <mesh ref={meshRef}>
+        <cylinderGeometry args={[0.025, 0.025, 1, 12]} />
         <meshStandardMaterial
           color={beamColor}
           emissive={beamColor}
@@ -382,7 +411,7 @@ function EnergyBeam({
 
       {/* Traveling Energy Pulse Sphere */}
       <mesh ref={pulseRef}>
-        <sphereGeometry args={[1, 16, 16]} />
+        <sphereGeometry args={[1, 12, 12]} />
         <meshStandardMaterial
           color={beamColor}
           emissive={beamColor}
@@ -412,49 +441,15 @@ function Scene({
   const coreX = isMobile ? 0 : 2.5;
   const coreY = isMobile ? 0.1 : 0.1;
   const coreZ = -0.5;
-  const corePosition: [number, number, number] = [coreX, coreY, coreZ];
-
-  const [cardPositions, setCardPositions] = useState<[number, number, number][]>([
-    [coreX - 1.8, coreY, coreZ],
-    [coreX + 1.8, coreY, coreZ],
-    [coreX, coreY + 0.8, coreZ - 1],
-  ]);
-
-  const [cardRotations, setCardRotations] = useState<[number, number, number][]>([
-    [0, 0.2, 0],
-    [0, -0.2, 0],
-    [0, 0, 0],
-  ]);
 
   const angleRef = useRef(0);
+  const rx = isMobile ? 1.8 : 2.45;
+  const rz = isMobile ? 1.0 : 1.4;
+  const ry = isMobile ? 0.18 : 0.22;
 
   useFrame((_, delta) => {
-    // Slow down rotation when hovering a card so user can easily click
     const speed = activeProject ? 0.08 : 0.35;
     angleRef.current += delta * speed;
-
-    const count = PROJECTS.length;
-    const rx = isMobile ? 1.8 : 2.45;
-    const rz = isMobile ? 1.0 : 1.4;
-
-    const newPositions: [number, number, number][] = [];
-    const newRotations: [number, number, number][] = [];
-
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2 + angleRef.current;
-      const x = coreX + Math.cos(angle) * rx;
-      const z = coreZ + Math.sin(angle) * rz;
-      const y = coreY + Math.sin(angle * 2) * (isMobile ? 0.18 : 0.22);
-
-      newPositions.push([x, y, z]);
-
-      // Gently angle card face toward center camera
-      const rotY = Math.sin(angle) * -0.28;
-      newRotations.push([0, rotY, 0]);
-    }
-
-    setCardPositions(newPositions);
-    setCardRotations(newRotations);
   });
 
   return (
@@ -468,8 +463,8 @@ function Scene({
 
       <RoomEnvironment />
       <AmbientSphere coreY={coreY} />
-      <ParticleField mousePosition={mousePosition} isWarping={!!activeProject} />
-      <Stars radius={50} depth={50} count={1000} factor={2} fade speed={activeProject ? 1.5 : 0.5} />
+      <ParticleField count={isMobile ? 200 : 350} mousePosition={mousePosition} isWarping={!!activeProject} />
+      <Stars radius={50} depth={50} count={450} factor={2} fade speed={activeProject ? 1.5 : 0.5} />
 
       {/* Futuristic 3D AI Quantum Core Group */}
       <group position={[coreX, coreY, -0.5]}>
@@ -480,8 +475,15 @@ function Scene({
       {PROJECTS.map((project, index) => (
         <EnergyBeam
           key={`beam-${project.id}`}
-          start={corePosition}
-          end={cardPositions[index] || corePosition}
+          index={index}
+          totalCount={PROJECTS.length}
+          coreX={coreX}
+          coreY={coreY}
+          coreZ={coreZ}
+          rx={rx}
+          rz={rz}
+          ry={ry}
+          angleRef={angleRef}
           color={project.color}
           isHovered={activeProject === project.id}
         />
@@ -492,8 +494,15 @@ function Scene({
         <HologramCard
           key={project.id}
           project={project}
-          position={cardPositions[index] || [0, 0, 0]}
-          rotation={cardRotations[index] || [0, 0, 0]}
+          index={index}
+          totalCount={PROJECTS.length}
+          coreX={coreX}
+          coreY={coreY}
+          coreZ={coreZ}
+          rx={rx}
+          rz={rz}
+          ry={ry}
+          angleRef={angleRef}
           isHovered={activeProject === project.id}
           onHover={(hovered) => setActiveProject(hovered ? project.id : null)}
           onClick={() => onProjectClick(project.id)}
@@ -563,7 +572,7 @@ export default function HeroScene({
             <WebGLErrorBoundary fallback={<HeroFallback />}>
               <Canvas
                 camera={{ position: [0, 1, 6], fov: 50 }}
-                dpr={[1, 2]}
+                dpr={[1, 1.5]}
                 gl={{
                   antialias: true,
                   alpha: true,
@@ -692,7 +701,7 @@ export default function HeroScene({
               <WebGLErrorBoundary fallback={<HeroFallback />}>
                 <Canvas
                   camera={{ position: [0, 0, 8.5], fov: 50 }}
-                  dpr={[1, 2]}
+                  dpr={[1, 1.5]}
                   gl={{
                     antialias: true,
                     alpha: true,
